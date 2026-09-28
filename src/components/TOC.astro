@@ -1,0 +1,69 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+// Only top-level sections (h2) keep the sidebar readable — matches chele.bi's flat list.
+const items = headings.filter((h) => h.depth === 2);
+// The nav stretches to the article's full height, so the inner list is what sticks —
+// sticky on the stretched nav itself never engages, since it has nowhere to travel.
+---
+
+{items.length > 0 && (
+  <nav aria-label="Table of contents" class="toc hidden w-56 shrink-0 lg:block">
+    <ul class="sticky top-8 flex max-h-[calc(100vh-4rem)] flex-col gap-2.5 overflow-y-auto border-l border-border pl-4 text-sm [scrollbar-width:none]">
+      {items.map((item) => (
+        <li>
+          <a
+            href={`#${item.slug}`}
+            data-toc-link
+            data-target={item.slug}
+            class="block text-fg-subtle transition-colors hover:text-fg"
+          >
+            {item.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+<script>
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]');
+  if (links.length > 0) {
+    const targets = Array.from(links)
+      .map((link) => document.getElementById(link.dataset.target ?? ''))
+      .filter((el): el is HTMLElement => el !== null);
+
+    const setActive = (slug: string) => {
+      links.forEach((link) => {
+        const isActive = link.dataset.target === slug;
+        link.classList.toggle('text-fg', isActive);
+        link.classList.toggle('font-medium', isActive);
+        link.classList.toggle('text-fg-subtle', !isActive);
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+        if (visible.length > 0) {
+          setActive(visible[0].target.id);
+        }
+      },
+      { rootMargin: '-10% 0px -70% 0px', threshold: 0 }
+    );
+
+    targets.forEach((target) => observer.observe(target));
+  }
+</script>

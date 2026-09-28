@@ -1,0 +1,165 @@
+---
+interface Props {
+  src?: string;
+  poster?: string;
+  caption: string;
+}
+
+const { src, poster, caption } = Astro.props;
+---
+
+<div class="relative left-1/2 my-8 w-[min(880px,90vw)] -translate-x-1/2 lg:left-0 lg:w-full lg:translate-x-0">
+  {src ? (
+    <>
+      <video
+        class="block aspect-video w-full rounded-lg bg-bg-elevated"
+        data-scroll-video
+        controls
+        muted
+        playsinline
+        preload="none"
+        poster={poster}
+        aria-label={caption}
+      >
+        <source src={src} type="video/mp4" />
+      </video>
+      <button
+        type="button"
+        data-replay
+        hidden
+        aria-label={`Replay: ${caption}`}
+        class="absolute top-1/2 left-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm transition hover:scale-105 hover:bg-black/75 [&[hidden]]:hidden"
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+          <path d="M3 3v5h5"></path>
+        </svg>
+      </button>
+    </>
+  ) : (
+    <div class="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong bg-bg-elevated text-fg-subtle">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="5" width="15" height="14" rx="2"></rect>
+        <path d="M17 9.5 22 6v12l-5-3.5"></path>
+      </svg>
+      <p class="text-sm">Video placeholder &mdash; {caption}</p>
+    </div>
+  )}
+</div>
+
+<script>
+  // Clips play once each, in page order: the earliest mostly-visible clip that
+  // hasn't finished plays, and when it ends the next visible clip starts. A
+  // finished clip holds its last frame until it leaves the viewport, then plays
+  // again on return. Clips never play off screen.
+  // The native controls override this: a clip the reader pauses stays paused (and
+  // doesn't hand off to the next one), and a clip the reader starts keeps playing,
+  // pausing the others, while it's in view.
+  const videos = Array.from(document.querySelectorAll<HTMLVideoElement>('[data-scroll-video]'));
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (videos.length > 0) {
+    const visible = new Set<HTMLVideoElement>();
+    const finished = new Set<HTMLVideoElement>();
+    const userPaused = new Set<HTMLVideoElement>();
+    // Marks play()/pause() calls made by this script, so their events aren't
+    // mistaken for the reader pressing the controls.
+    const scripted = new WeakSet<HTMLVideoElement>();
+    let pinned: HTMLVideoElement | null = null;
+
+    const autoPlay = (v: HTMLVideoElement) => {
+      if (!v.paused) return;
+      scripted.add(v);
+      v.play().catch(() => scripted.delete(v));
+    };
+    const autoPause = (v: HTMLVideoElement) => {
+      if (v.paused) return;
+      scripted.add(v);
+      v.pause();
+    };
+
+    const update = () => {
+      if (pinned && !visible.has(pinned)) pinned = null;
+
+      let active: HTMLVideoElement | null = pinned;
+      if (!active && !reducedMotion.matches) {
+        const next = videos.find((v) => visible.has(v) && !finished.has(v));
+        if (next && !userPaused.has(next)) active = next;
+      }
+
+      videos.forEach((v) => {
+        if (v === active) autoPlay(v);
+        else autoPause(v);
+      });
+    };
+
+    videos.forEach((v) => {
+      const replay = v.parentElement?.querySelector<HTMLButtonElement>('[data-replay]');
+      replay?.addEventListener('click', () => v.play());
+
+      v.addEventListener('play', () => {
+        if (replay) replay.hidden = true;
+        if (scripted.delete(v)) return;
+        // The reader pressed play.
+        userPaused.delete(v);
+        finished.delete(v);
+        pinned = v;
+        videos.forEach((other) => other !== v && autoPause(other));
+      });
+      v.addEventListener('pause', () => {
+        // Reaching the end also fires 'pause'; 'ended' handles that case.
+        if (scripted.delete(v) || v.ended) return;
+        // The reader pressed pause.
+        userPaused.add(v);
+        if (pinned === v) pinned = null;
+      });
+      v.addEventListener('ended', () => {
+        if (replay) replay.hidden = false;
+        finished.add(v);
+        if (pinned === v) pinned = null;
+        update();
+      });
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const v = entry.target as HTMLVideoElement;
+          if (entry.intersectionRatio >= 0.5) {
+            visible.add(v);
+          } else {
+            visible.delete(v);
+            // Leaving the viewport resets a finished clip so it replays on return.
+            if (finished.delete(v)) {
+              v.currentTime = 0;
+              const replay = v.parentElement?.querySelector<HTMLButtonElement>('[data-replay]');
+              if (replay) replay.hidden = true;
+            }
+          }
+        });
+        update();
+      },
+      { threshold: [0, 0.5, 1] }
+    );
+
+    // Start fetching a clip shortly before it scrolls into view.
+    const preloader = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            (entry.target as HTMLVideoElement).preload = 'auto';
+            preloader.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: '600px 0px' }
+    );
+
+    videos.forEach((v) => {
+      observer.observe(v);
+      preloader.observe(v);
+    });
+
+    reducedMotion.addEventListener('change', update);
+  }
+</script>

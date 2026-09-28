@@ -1,0 +1,62 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  containerClass?: string;
+}
+
+const {
+  title,
+  description = 'Writing about UX and game design, one game at a time.',
+  containerClass = 'max-w-3xl',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body class="bg-bg text-fg antialiased">
+    <div class={`mx-auto flex min-h-screen ${containerClass} flex-col px-6`}>
+      <header class="flex items-center justify-between py-8">
+        <a href="/" class="font-mono text-sm font-medium text-fg hover:text-fg-muted">
+          deckard_pain<span class="logo-cursor" aria-hidden="true"></span>
+        </a>
+        <nav class="flex items-center gap-5 text-sm text-fg-muted">
+          <a href="/" class="hover:text-fg">Writing</a>
+          <a href="/rss.xml" class="hover:text-fg">RSS</a>
+        </nav>
+      </header>
+
+      <main class="flex-1 pb-24">
+        <slot />
+      </main>
+
+      <footer class="flex flex-col gap-4 border-t border-border py-8 text-xs text-fg-subtle sm:flex-row sm:items-center sm:justify-between">
+        <p>&copy; {new Date().getFullYear()} — built with Astro.</p>
+        <ul class="flex flex-wrap gap-5">
+          <li>
+            <a
+              href="https://www.goodreads.com/user/show/25770377-deckard"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="transition-colors hover:text-fg"
+            >
+              Goodreads
+            </a>
+          </li>
+          <li>
+            <a href="/rss.xml" class="transition-colors hover:text-fg">RSS</a>
+          </li>
+        </ul>
+      </footer>
+    </div>
+  </body>
+</html>

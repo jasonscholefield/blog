@@ -1,0 +1,66 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TagPill from '../../components/TagPill.astro';
+import TOC from '../../components/TOC.astro';
+import { Image } from 'astro:assets';
+import signature from '../../assets/signature.png';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+
+const formattedDate = post.data.date.toLocaleDateString('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+const readingTime = Math.max(1, Math.round((post.body ?? '').trim().split(/\s+/).length / 200));
+---
+
+<BaseLayout
+  title={`${post.data.title} — deckard pain`}
+  description={post.data.summary}
+  containerClass="max-w-5xl"
+>
+  <a href="/" class="mb-8 inline-block text-sm text-fg-subtle hover:text-fg">&larr; All posts</a>
+
+  <div class="flex gap-12">
+    <TOC headings={headings} />
+
+    <article class="mx-auto min-w-0 flex-1 max-w-[640px] lg:mx-0">
+      <div class="flex flex-wrap items-center gap-2 text-xs text-fg-subtle">
+        <span>{formattedDate}</span>
+        <span aria-hidden="true">&middot;</span>
+        <span>{readingTime} min read</span>
+        <span aria-hidden="true">&middot;</span>
+        <span>Deckard Pain</span>
+      </div>
+
+      <h1 class="mt-2 font-sans text-3xl font-semibold tracking-tight text-fg">
+        {post.data.title}
+      </h1>
+
+      {post.data.tags.length > 0 && (
+        <div class="mt-4 flex flex-wrap gap-2">
+          {post.data.tags.map((tag) => <TagPill tag={tag} />)}
+        </div>
+      )}
+
+      <div class="prose prose-invert mt-8 max-w-none prose-headings:font-sans prose-headings:font-semibold prose-p:leading-relaxed prose-code:font-mono prose-pre:font-mono prose-img:rounded-lg prose-img:border prose-img:border-border">
+        <Content />
+      </div>
+
+      <Image src={signature} alt="Deckard" width={150} densities={[1, 2]} format="png" class="mt-12" />
+    </article>
+  </div>
+</BaseLayout>

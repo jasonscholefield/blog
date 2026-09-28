@@ -1,0 +1,120 @@
+---
+interface ShelfBook {
+  title: string;
+  author: string;
+  coverUrl: string;
+  current?: boolean;
+}
+
+interface Props {
+  books: ShelfBook[];
+}
+
+const { books } = Astro.props;
+const currentIndex = books.findIndex((b) => b.current);
+const current = currentIndex >= 0 ? books[currentIndex] : null;
+
+// Fixed slot sizes (rather than each cover's natural aspect ratio) keep the
+// fan's overlap/spacing predictable regardless of the source image
+// dimensions — covers are cropped to fit via object-cover.
+const BASE_WIDTH = 132;
+const BASE_HEIGHT = 196;
+const CURRENT_WIDTH = 176;
+const CURRENT_HEIGHT = 260;
+const OVERLAP = 46;
+
+function styleFor(book: ShelfBook, offset: number, extraMargin: { left?: boolean; right?: boolean } = {}) {
+  const abs = Math.abs(offset);
+  // Fanned like a hand of cards: rotation pivots from the bottom edge
+  // (transform-origin below), so books spread outward from a shared base
+  // point rather than floating up independently.
+  const rotate = Math.max(-20, Math.min(20, offset * 4));
+  const lift = book.current ? 26 : Math.max(0, 10 - abs * 1.5);
+  const z = book.current ? 50 : 30 - abs;
+  const width = book.current ? CURRENT_WIDTH : BASE_WIDTH;
+  const height = book.current ? CURRENT_HEIGHT : BASE_HEIGHT;
+  const marginLeft = extraMargin.left ? -OVERLAP : 0;
+  const marginRight = extraMargin.right ? -OVERLAP : 0;
+
+  return `width:${width}px;height:${height}px;margin-left:${marginLeft}px;margin-right:${marginRight}px;transform:translateY(${-lift}px) rotate(${rotate}deg);transform-origin:bottom center;z-index:${z};`;
+}
+
+// Split around the current book and lay the two halves out in a
+// `1fr auto 1fr` grid — each side gets equal track width no matter how many
+// books it holds, so the current book's own column always sits at the row's
+// true center instead of drifting with an uneven left/right count.
+const beforeCurrent = books.slice(0, currentIndex);
+const afterCurrent = books.slice(currentIndex + 1);
+
+const leftItems = beforeCurrent.map((book, i) => ({
+  ...book,
+  style: styleFor(book, i - currentIndex, { left: i > 0, right: i === beforeCurrent.length - 1 }),
+}));
+
+const rightItems = afterCurrent.map((book, i) => ({
+  ...book,
+  style: styleFor(book, i + 1, { left: true }),
+}));
+
+const currentStyle = current ? styleFor(current, 0) : '';
+---
+
+<div class="w-full overflow-x-auto py-14">
+  <div class="grid w-full items-end px-6" style="grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);">
+    <div class="flex items-end justify-end">
+      {leftItems.map((book) => (
+        <div class="relative shrink-0" style={book.style}>
+          <img
+            src={book.coverUrl}
+            alt={`${book.title} cover`}
+            class="h-full w-full rounded-[2px] object-cover shadow-2xl shadow-black/70"
+            loading="lazy"
+          />
+        </div>
+      ))}
+    </div>
+
+    {current && (
+      <div class="relative shrink-0" style={currentStyle}>
+        <img
+          src={current.coverUrl}
+          alt={`${current.title} cover`}
+          class="h-full w-full rounded-[2px] object-cover shadow-2xl shadow-black/70"
+          loading="lazy"
+        />
+      </div>
+    )}
+
+    <div class="flex items-end justify-start">
+      {rightItems.map((book) => (
+        <div class="relative shrink-0" style={book.style}>
+          <img
+            src={book.coverUrl}
+            alt={`${book.title} cover`}
+            class="h-full w-full rounded-[2px] object-cover shadow-2xl shadow-black/70"
+            loading="lazy"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {current && (
+    <div class="mt-10 flex flex-col items-center gap-1.5 text-center">
+      <div class="flex items-center gap-1.5 text-xs text-fg-subtle">
+        <span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
+        Currently reading
+      </div>
+      <p class="font-sans text-base font-semibold text-fg">{current.title}</p>
+      <p class="text-sm text-fg-subtle">{current.author}</p>
+      <a
+        href="https://www.goodreads.com/user/show/25770377-deckard"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-2 text-xs text-fg-subtle underline decoration-border-strong underline-offset-2 hover:text-fg"
+      >
+        See everything I've read on Goodreads
+      </a>
+    </div>
+  )}
+</div>
