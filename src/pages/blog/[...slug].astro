@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import TagPill from '../../components/TagPill.astro';
 import TOC from '../../components/TOC.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
 import { Image } from 'astro:assets';
 import signature from '../../assets/signature.png';
 
@@ -32,6 +33,8 @@ const readingTime = Math.max(1, Math.round((post.body ?? '').trim().split(/\s+/)
   description={post.data.summary}
   containerClass="max-w-5xl"
 >
+  <ReadingProgress />
+
   <a href="/" class="mb-8 inline-block text-sm text-fg-subtle hover:text-fg">&larr; All posts</a>
 
   <div class="flex gap-12">
