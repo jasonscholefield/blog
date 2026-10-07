@@ -81,3 +81,11 @@
   --tw-prose-th-borders: var(--color-border);
   --tw-prose-td-borders: var(--color-border);
 }
+
+/* Image caption: `<p class="caption">…</p>` on the line after an image in a post. */
+.prose .caption {
+  margin-top: -1em;
+  text-align: center;
+  font-size: 0.875em;
+  color: var(--tw-prose-captions);
+}
