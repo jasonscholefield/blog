@@ -65,14 +65,14 @@ Neither version helps itself with the name, either. Ask most people in the West 
 
 And then there's the plain fact of the chairs. Mahjong needs four people. Not two to four. Four. Board games learned a long time ago that a flexible player count is half of what gets a box off the shelf. Mahjong will sit unopened in a cupboard for a year because one friend couldn't make it on Thursday.
 
-## And yet, people are showing up.
+## The fourth chair.
 
-What complicates all of this is that American mahjong, right now, is popular. Over the last few years it has turned up in bars and community halls and on the calendars of people in their twenties who had never touched a tile. New sets come in pastel colours. There are waiting lists for beginner classes.
+What complicates all of this is that the game has never needed to be easy to last. American mahjong has been played for close to a century by rooms full of people teaching each other. Someone hosts, someone else brings the set, and the teaching happens across the table, from people who are patient because they want you back next week. The card still changes every April. The fourth chair gets filled because somebody goes and fills it.
 
-The rules didn't get easier. The card still changes in April. What changed is that people started showing up for each other. Someone organises the night, someone else brings the set, and the teaching happens across the table, by people who are patient because they want you back next week. The fourth chair gets filled because somebody went and filled it.
+This spring, nobody can. The new card arrives this month into a world where four people can't share a table, and I keep thinking about all the sets sitting closed in cupboards, waiting for that to change.
 
-Riichi has some of that online. Mahjong Soul and its rivals will match you with three strangers at any hour and do every bit of the scoring for you, which quietly removes half the problems above. But they come dressed in the look of a gacha game, all sparkle and character skins, and I've watched friends close the app before the first hand loaded.
+Riichi has a partial answer. Tenhou and Mahjong Soul will match you with three strangers at any hour and do every bit of the scoring for you, which quietly removes half the problems above. But Mahjong Soul comes dressed in the look of a gacha game, all sparkle and character skins, and I've seen friends close it before the first hand loaded.
 
 So I still don't fully understand it. I think the game is one of the best ever designed. I think it asks too much of you on the first night. Both of those are true at the same time, and I'm not sure they can be fixed by changing a rule.
 
-Somewhere tonight four people are shuffling the tiles. One of them is new, and doesn't know what a yaku is, and is about to draw the tile that finishes their hand.
+Somewhere tonight four strangers in four different houses are waiting on the same shuffle. One of them is new, and doesn't know what a yaku is, and is about to draw the tile that finishes their hand.
