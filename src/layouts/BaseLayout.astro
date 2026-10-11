@@ -31,8 +31,8 @@ const {
           deckard_pain<span class="logo-cursor" aria-hidden="true"></span>
         </a>
         <nav class="flex items-center gap-5 text-sm text-fg-muted">
-          <a href="/" class="hover:text-fg">Writing</a>
-          <a href="/rss.xml" class="hover:text-fg">RSS</a>
+          <a href="/" class="link-arrow hover:text-fg">Writing</a>
+          <a href="/rss.xml" class="link-arrow hover:text-fg">RSS</a>
         </nav>
       </header>
 
@@ -48,13 +48,13 @@ const {
               href="https://www.goodreads.com/user/show/25770377-deckard"
               target="_blank"
               rel="noopener noreferrer"
-              class="transition-colors hover:text-fg"
+              class="link-arrow transition-colors hover:text-fg"
             >
               Goodreads
             </a>
           </li>
           <li>
-            <a href="/rss.xml" class="transition-colors hover:text-fg">RSS</a>
+            <a href="/rss.xml" class="link-arrow transition-colors hover:text-fg">RSS</a>
           </li>
         </ul>
       </footer>
@@ -64,8 +64,7 @@ const {
       // Link hover: letters scramble and settle left to right over ~420ms.
       // The real text stays in place (made transparent) with the scramble drawn on top,
       // so nothing around the link shifts while it runs.
-      const UPPER = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%&*+=/<>';
-      const LOWER = 'abcdefghjkmnpqrstuvwxyz0123456789';
+      const GLYPHS = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%&*+=/<>';
       const DURATION = 420;
       const BLOCK_CONTENT = 'img, picture, svg, video, div, p, h1, h2, h3, h4, h5, h6';
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -77,8 +76,7 @@ const {
         return chars
           .map((ch, i) => {
             if (i < revealed || !/[a-z0-9]/i.test(ch)) return ch;
-            const pool = /[a-z]/.test(ch) ? LOWER : UPPER;
-            return pool[Math.floor(Math.random() * pool.length)];
+            return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
           })
           .join('');
       }
