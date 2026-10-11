@@ -6,9 +6,10 @@ interface Props {
   author: string;
   year?: string | number;
   verdict?: string;
+  summary?: string;
 }
 
-const { score, outOf = 10, title, author, year, verdict } = Astro.props;
+const { score, outOf = 10, title, author, year, verdict, summary } = Astro.props;
 ---
 
 <figure
@@ -17,8 +18,9 @@ const { score, outOf = 10, title, author, year, verdict } = Astro.props;
 >
   {verdict && (
     <div class="pt-3 pb-5">
-      <div class="mb-2.5 font-mono text-xs text-fg-muted">Verdict</div>
+      <div class="mb-4 font-mono text-xs text-fg-muted">Verdict</div>
       <p class="text-2xl font-medium leading-tight tracking-tight text-fg sm:text-3xl">{verdict}</p>
+      {summary && <p class="mt-3 text-base leading-relaxed text-fg-muted">{summary}</p>}
     </div>
   )}
   <div class:list={["grid grid-cols-2 border-b border-border-strong", verdict && "border-t"]}>
