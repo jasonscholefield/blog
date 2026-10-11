@@ -59,5 +59,96 @@ const {
         </ul>
       </footer>
     </div>
+
+    <script>
+      // Link hover: letters scramble and settle left to right over ~420ms.
+      // The real text stays in place (made transparent) with the scramble drawn on top,
+      // so nothing around the link shifts while it runs.
+      const UPPER = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%&*+=/<>';
+      const LOWER = 'abcdefghjkmnpqrstuvwxyz0123456789';
+      const DURATION = 420;
+      const BLOCK_CONTENT = 'img, picture, svg, video, div, p, h1, h2, h3, h4, h5, h6';
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const frames = new WeakMap<HTMLAnchorElement, number>();
+
+      function scramble(text: string, progress: number) {
+        const chars = Array.from(text);
+        const revealed = Math.floor(progress * chars.length);
+        return chars
+          .map((ch, i) => {
+            if (i < revealed || !/[a-z0-9]/i.test(ch)) return ch;
+            const pool = /[a-z]/.test(ch) ? LOWER : UPPER;
+            return pool[Math.floor(Math.random() * pool.length)];
+          })
+          .join('');
+      }
+
+      // Only links with a single run of text (plus empty decoration like the logo cursor).
+      function textNodeOf(link: HTMLAnchorElement) {
+        if (link.querySelector(BLOCK_CONTENT)) return null;
+        const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
+        let found: Text | null = null;
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (!node.textContent?.trim()) continue;
+          if (found) return null;
+          found = node as Text;
+        }
+        return found;
+      }
+
+      function run(link: HTMLAnchorElement) {
+        if (reduceMotion.matches) return;
+
+        let wrap = link.querySelector<HTMLElement>('.link-scramble');
+        if (!wrap) {
+          // A link wrapping across lines can't be overlaid cleanly, so it only gets the underline.
+          if (link.getClientRects().length > 1) return;
+          const node = textNodeOf(link);
+          if (!node) return;
+          wrap = document.createElement('span');
+          wrap.className = 'link-scramble';
+          const source = document.createElement('span');
+          source.dataset.source = '';
+          const fx = document.createElement('span');
+          fx.dataset.fx = '';
+          fx.setAttribute('aria-hidden', 'true');
+          node.replaceWith(wrap);
+          source.append(node);
+          wrap.append(source, fx);
+        }
+
+        const node = wrap.querySelector('[data-source]')!.firstChild as Text;
+        const fx = wrap.querySelector<HTMLElement>('[data-fx]')!;
+        const text = node.textContent ?? '';
+        const finalWrap = wrap;
+        const start = performance.now();
+        let tick = 0;
+
+        cancelAnimationFrame(frames.get(link) ?? 0);
+        const step = (now: number) => {
+          const progress = (now - start) / DURATION;
+          if (progress >= 1) {
+            finalWrap.replaceWith(node);
+            frames.delete(link);
+            return;
+          }
+          // Swapping glyphs every other frame reads as flicker rather than noise.
+          if (tick++ % 2 === 0) fx.textContent = scramble(text, progress);
+          frames.set(link, requestAnimationFrame(step));
+        };
+        frames.set(link, requestAnimationFrame(step));
+      }
+
+      document.addEventListener('pointerover', (event) => {
+        const link = (event.target as Element).closest?.('a');
+        if (!link || link.contains(event.relatedTarget as Node | null)) return;
+        run(link);
+      });
+
+      document.addEventListener('focusin', (event) => {
+        const link = (event.target as Element).closest?.('a');
+        if (link?.matches(':focus-visible')) run(link);
+      });
+    </script>
   </body>
 </html>

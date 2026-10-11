@@ -89,3 +89,64 @@
   font-size: 0.875em;
   color: var(--tw-prose-captions);
 }
+
+/* Link hover: underline wipes in from the left and back out to the right.
+   Card links (anything wrapping images or block content) are left alone.
+   Drawn with a background so it follows links that wrap onto a second line. */
+a:not(:has(img, picture, svg, video, div, p, h1, h2, h3, h4, h5, h6)) {
+  text-decoration: none;
+  padding-bottom: 2px;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 100% 100%;
+  background-size: 0% 1px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition:
+    background-size 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 0.15s ease;
+}
+
+a:not(:has(img, picture, svg, video, div, p, h1, h2, h3, h4, h5, h6)):is(:hover, :focus-visible) {
+  background-position: 0 100%;
+  background-size: 100% 1px;
+}
+
+/* Links inside running text keep a dim resting underline so they still read as links. */
+.prose a:not(:has(img, picture, svg, video)),
+a.link-underline {
+  background-image:
+    linear-gradient(currentColor, currentColor),
+    linear-gradient(var(--color-border-strong), var(--color-border-strong));
+  background-position: 100% 100%, 0 100%;
+  background-size: 0% 1px, 100% 1px;
+}
+
+.prose a:not(:has(img, picture, svg, video)):is(:hover, :focus-visible),
+a.link-underline:is(:hover, :focus-visible) {
+  background-position: 0 100%, 0 100%;
+  background-size: 100% 1px, 100% 1px;
+}
+
+/* Scramble overlay added by the script in BaseLayout while a link is hovered. */
+.link-scramble {
+  position: relative;
+}
+
+.link-scramble > [data-source] {
+  color: transparent;
+}
+
+.link-scramble > [data-fx] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a {
+    transition: none !important;
+  }
+}
