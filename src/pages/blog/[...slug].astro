@@ -8,7 +8,8 @@ import { Image } from 'astro:assets';
 import signature from '../../assets/signature.png';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  // Drafts are viewable by URL in dev, never built in production.
+  const posts = await getCollection('blog', ({ data }) => import.meta.env.DEV || !data.draft);
   return posts.map((post) => ({
     params: { slug: post.id },
     props: { post },
